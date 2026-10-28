@@ -1,0 +1,239 @@
+{
+  "version": 3,
+  "generatedAt": "2026-10-28T02:14:25.618649Z",
+  "framework": "plain",
+  "devUrl": "http://localhost:8080",
+  "runDev": "python3 -m http.server 8080 --bind 127.0.0.1",
+  "stack": {
+    "languages": [
+      "javascript"
+    ],
+    "runtime": null,
+    "packageManager": null,
+    "buildTool": null,
+    "repoType": "single",
+    "uiLibraries": [],
+    "stateManagement": [],
+    "forms": [],
+    "validation": [],
+    "httpClient": [],
+    "styling": [],
+    "testFrameworks": [],
+    "e2eFrameworks": [],
+    "nodeVersion": null
+  },
+  "integrations": {
+    "github": {
+      "enabled": false,
+      "mcpServer": null
+    },
+    "jira": {
+      "enabled": false,
+      "mcpServer": null
+    },
+    "azureDevOps": {
+      "enabled": false,
+      "mcpServer": null
+    }
+  },
+  "settingsSnapshot": {
+    "taskDepth": "standard",
+    "maxTasksPerRoute": 8,
+    "browserEngine": "playwright",
+    "headless": true,
+    "settleMs": 500,
+    "authMode": "none",
+    "defaultRole": "anonymous",
+    "analysisMode": "live inventory via Playwright (viewport 390x800) plus source reading; browser-agent analysis was not possible"
+  },
+  "auth": {
+    "mode": "none",
+    "defaultRole": "anonymous",
+    "credentialSource": null,
+    "rolesUsed": [
+      "anonymous"
+    ],
+    "rolesConfigured": [
+      "anonymous"
+    ]
+  },
+  "routes": [
+    {
+      "path": "/",
+      "slug": "welcome-hoy",
+      "sourceFile": "index.html",
+      "fingerprint": "a1e594e0dcbf14daff565410039352b139c3f69325c679dda9f4618486ff1859",
+      "requiresAuth": false,
+      "rolesAllowed": [
+        "anonymous"
+      ],
+      "guards": [
+        "ST.profe welcome gate"
+      ],
+      "httpMethods": [
+        "GET"
+      ],
+      "analysis": "QA-tests/routes/welcome-hoy.md",
+      "tasks": [
+        "T01-welcome-hoy-name-gate",
+        "T02-welcome-hoy-name-gate-validation",
+        "T03-welcome-hoy-hoy-no-groups",
+        "T04-welcome-hoy-hoy-one-group",
+        "T05-welcome-hoy-hoy-buttons",
+        "T06-welcome-hoy-sync-snackbar"
+      ]
+    },
+    {
+      "path": "/ (tab: alumnas)",
+      "slug": "alumnas",
+      "sourceFile": "index.html",
+      "fingerprint": "a1e594e0dcbf14daff565410039352b139c3f69325c679dda9f4618486ff1859",
+      "requiresAuth": false,
+      "rolesAllowed": [
+        "anonymous"
+      ],
+      "guards": [
+        "ST.profe welcome gate"
+      ],
+      "httpMethods": [
+        "GET"
+      ],
+      "analysis": "QA-tests/routes/alumnas.md",
+      "tasks": [
+        "T10-alumnas-create-group",
+        "T11-alumnas-group-form-validation",
+        "T12-alumnas-add-student",
+        "T13-alumnas-ficha-edit",
+        "T14-alumnas-cuotas",
+        "T15-alumnas-delete-student-group",
+        "T16-alumnas-edit-group"
+      ]
+    },
+    {
+      "path": "/ (tab: clases)",
+      "slug": "clases",
+      "sourceFile": "index.html",
+      "fingerprint": "a1e594e0dcbf14daff565410039352b139c3f69325c679dda9f4618486ff1859",
+      "requiresAuth": false,
+      "rolesAllowed": [
+        "anonymous"
+      ],
+      "guards": [
+        "ST.profe welcome gate"
+      ],
+      "httpMethods": [
+        "GET"
+      ],
+      "analysis": "QA-tests/routes/clases.md",
+      "tasks": [
+        "T20-clases-guardar-clase",
+        "T21-clases-validacion-guardar",
+        "T22-clases-bloques-plantilla-copiar",
+        "T23-clases-abrir-editar",
+        "T24-clases-destructive-borrar",
+        "T25-clases-grupo-vinculado"
+      ]
+    },
+    {
+      "path": "/ (tab: calendario)",
+      "slug": "calendario",
+      "sourceFile": "index.html",
+      "fingerprint": "a1e594e0dcbf14daff565410039352b139c3f69325c679dda9f4618486ff1859",
+      "requiresAuth": false,
+      "rolesAllowed": [
+        "anonymous"
+      ],
+      "guards": [
+        "ST.profe welcome gate"
+      ],
+      "httpMethods": [
+        "GET"
+      ],
+      "analysis": "QA-tests/routes/calendario.md",
+      "tasks": [
+        "T30-calendario-render-and-navigation",
+        "T31-calendario-attendance",
+        "T32-calendario-que-se-vio",
+        "T33-calendario-nota",
+        "T34-calendario-plan-link",
+        "T35-calendario-sync-prompt",
+        "T36-calendario-destructive-cascade"
+      ]
+    },
+    {
+      "path": "/ (tab: coreos)",
+      "slug": "coreos",
+      "sourceFile": "index.html",
+      "fingerprint": "a1e594e0dcbf14daff565410039352b139c3f69325c679dda9f4618486ff1859",
+      "requiresAuth": false,
+      "rolesAllowed": [
+        "anonymous"
+      ],
+      "guards": [
+        "ST.profe welcome gate"
+      ],
+      "httpMethods": [
+        "GET"
+      ],
+      "analysis": "QA-tests/routes/coreos.md",
+      "tasks": [
+        "T40-coreos-list-and-student-view",
+        "T41-coreos-checklist-mandatory-items",
+        "T42-coreos-add-step",
+        "T43-coreos-destructive-delete-step",
+        "T44-coreos-song-link",
+        "T45-coreos-efficiency-and-duration",
+        "T46-coreos-worked-in-class"
+      ]
+    },
+    {
+      "path": "/ (tab: mas)",
+      "slug": "mas",
+      "sourceFile": "index.html",
+      "fingerprint": "a1e594e0dcbf14daff565410039352b139c3f69325c679dda9f4618486ff1859",
+      "requiresAuth": false,
+      "rolesAllowed": [
+        "anonymous"
+      ],
+      "guards": [
+        "ST.profe welcome gate"
+      ],
+      "httpMethods": [
+        "GET"
+      ],
+      "analysis": "QA-tests/routes/mas.md",
+      "tasks": [
+        "T50-mas-menu-subpantallas",
+        "T51-mas-sincronizar",
+        "T52-mas-mensajes",
+        "T53-mas-reglamento",
+        "T54-mas-aviso-familias",
+        "T55-mas-ajustes-nombre"
+      ]
+    },
+    {
+      "path": "/#importar",
+      "slug": "importar",
+      "sourceFile": "index.html",
+      "fingerprint": "a1e594e0dcbf14daff565410039352b139c3f69325c679dda9f4618486ff1859",
+      "requiresAuth": false,
+      "rolesAllowed": [
+        "anonymous"
+      ],
+      "guards": [
+        "ST.profe welcome gate"
+      ],
+      "httpMethods": [
+        "GET"
+      ],
+      "analysis": "QA-tests/routes/importar.md",
+      "tasks": [
+        "T60-importar-valid-merge",
+        "T61-importar-rejected-files",
+        "T62-importar-hash-link",
+        "T63-importar-crafted-id-security",
+        "T64-importar-newer-wins-merge"
+      ]
+    }
+  ]
+}
