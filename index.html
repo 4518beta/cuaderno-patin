@@ -442,7 +442,14 @@ const LIGA = {
 const STORE = "cuaderno-liga-v2", FMT = 2;
 const blank = () => ({ fmt: FMT, D: {}, base: {}, profe: "", lastShared: 0, merged: {}, askNo: "" });
 function load() {
-  try { const r = localStorage.getItem(STORE); if (r) { const o = JSON.parse(r); if (o && o.fmt === FMT && o.D) return Object.assign(blank(), o); } } catch (e) {}
+  try {
+    const r = localStorage.getItem(STORE);
+    if (r) {
+      const o = JSON.parse(r);
+      if (o && o.fmt === FMT && o.D) return Object.assign(blank(), o);
+      localStorage.setItem(STORE + "-anterior", r);
+    }
+  } catch (e) {}
   return blank();
 }
 let ST = load(), saveTimer = 0;
@@ -511,6 +518,8 @@ function cleanV(v, key) {
   if (typeof v === "string") { if (/url$/i.test(key || "") && v && !okUrl(v)) return ""; return v.slice(0, 4000); }
   return typeof v === "number" || typeof v === "boolean" || v === null ? v : null;
 }
+const ID_FIELDS = ["id", "gid", "sid", "ref", "eff"], ID_OK = /^[\w.-]{0,64}$/;
+const idsOk = v => !v || typeof v !== "object" || ID_FIELDS.every(f => v[f] === undefined || (typeof v[f] === "string" && ID_OK.test(v[f])));
 function cleanData(raw) {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
   const out = {}, ok = /^[gscalnkpq]:.{1,300}$/; let n = 0;
@@ -518,7 +527,9 @@ function cleanData(raw) {
     if (n > 60000 || !ok.test(k)) return;
     const x = raw[k];
     if (!x || typeof x !== "object" || typeof x.t !== "number" || !isFinite(x.t)) return;
-    out[k] = { t: x.t, v: cleanV(x.v, k) }; n++;
+    const v = cleanV(x.v, k);
+    if (!idsOk(v)) return;
+    out[k] = { t: x.t, v }; n++;
   });
   return out;
 }
@@ -537,7 +548,7 @@ function parseImport(text) {
 const SEC = { hoy: "lila", clases: "celeste", calendario: "limon", coreos: "rosa", alumnas: "menta", mas: "durazno" };
 const NAV = [["hoy", "Hoy", "lila", "home"], ["clases", "Clases", "celeste", "book"], ["calendario", "Calendario", "limon", "cal"], ["coreos", "Coreos", "rosa", "music"], ["alumnas", "Alumnas", "menta", "users"], ["mas", "Más", "durazno", "dots"]];
 const ui = { tab: "hoy", sub: "", cg: null, cdate: todayISO(), month: todayISO().slice(0, 7), draft: null, coGroup: null, sid: null, editStep: null, ag: null, editG: null, ficha: null, confirm: null, rcopa: "gm", reff: "gm-tercera", imp: null, syncMsg: "", ask: false, cerr: "", copied: "" };
-const gOpts = sel => groups().map(g => `<option value="${g.id}"${g.id === sel ? " selected" : ""}>${esc(g.name)}</option>`).join("");
+const gOpts = sel => groups().map(g => `<option value="${esc(g.id)}"${g.id === sel ? " selected" : ""}>${esc(g.name)}</option>`).join("");
 const gName = id => (group(id) || {}).name || "";
 const delBtn = (a, id, label = "Borrar") => { const k = a + id; return `<button class="btn small ${ui.confirm === k ? "danger" : "ghost"}" data-a="${a}" data-id="${esc(id)}">${ui.confirm === k ? "¿Seguro?" : label}</button>`; };
 const mins = bl => bl.reduce((t, b) => t + (+b.m || 0), 0);
@@ -563,7 +574,7 @@ function nextClass() {
 }
 function weekStrip() {
   const t = todayISO(), lead = (wdOf(t) + 6) % 7, mon = addDaysTo(t, -lead);
-  return `<div class="wk">${[0, 1, 2, 3, 4, 5, 6].map(i => { const d = addDaysTo(mon, i), has = groups().some(g => isScheduled(g, d)); return `<button class="btn small${d === t ? " on" : ""}" data-a="goDay" data-id="${d}" aria-label="${esc(fmtLong(d))}"><span style="display:block;font-size:.7rem">${WD[wdOf(d)]}</span><b>${+d.slice(8)}</b>${has ? '<span style="display:block;line-height:.4;font-size:1.2rem">·</span>' : ""}</button>`; }).join("")}</div>`;
+  return `<div class="wk">${[0, 1, 2, 3, 4, 5, 6].map(i => { const d = addDaysTo(mon, i), has = groups().some(g => isScheduled(g, d)); return `<button class="btn small${d === t ? " on" : ""}" data-a="goDay" data-id="${esc(d)}" aria-label="${esc(fmtLong(d))}"><span style="display:block;font-size:.7rem">${WD[wdOf(d)]}</span><b>${+d.slice(8)}</b>${has ? '<span style="display:block;line-height:.4;font-size:1.2rem">·</span>' : ""}</button>`; }).join("")}</div>`;
 }
 function rHoy() {
   const gs = groups(), t = todayISO();
@@ -573,9 +584,9 @@ function rHoy() {
   const nc = nextClass();
   const big = nc ? `<div class="card tint tape stack" style="--sec:var(--lila);--sh:var(--sh-lila);gap:10px"><div class="row" style="justify-content:space-between"><span class="chip white">Próxima clase${nc.d === t ? " · hoy" : " · " + esc(fmt(nc.d))}</span></div>
     <div class="stat">${esc(nc.g.hora || "--:--")}</div><p><b>${esc(nc.g.name)}</b> · ${students(nc.g.id).length} alumnas</p>
-    <div class="row"><button class="btn" data-a="pasarLista" data-id="${nc.g.id}" data-d="${nc.d}">Pasar lista</button><button class="btn ghost" data-a="verPlan" data-id="${nc.g.id}" data-d="${nc.d}">Ver plan</button></div></div>` : `<div class="empty">No hay clases en los próximos días. Cargá los días de cada grupo en Alumnas.</div>`;
+    <div class="row"><button class="btn" data-a="pasarLista" data-id="${esc(nc.g.id)}" data-d="${nc.d}">Pasar lista</button><button class="btn ghost" data-a="verPlan" data-id="${esc(nc.g.id)}" data-d="${nc.d}">Ver plan</button></div></div>` : `<div class="empty">No hay clases en los próximos días. Cargá los días de cada grupo en Alumnas.</div>`;
   const hoy = gs.filter(g => isScheduled(g, t)).sort((a, b) => (a.hora || "").localeCompare(b.hora || ""));
-  const cards = hoy.map((g, i) => { const n = students(g.id).length, p = presentCount(g.id, t), c = ["celeste", "rosa", "menta", "limon"][i % 4]; return `<div class="card tint stack" style="--sec:var(--${c});--sh:var(--sh-${c});gap:8px"><div class="row" style="justify-content:space-between"><h3>${esc(g.hora || "")} ${esc(g.name)}</h3>${p ? chip(p + " de " + n + " vinieron", "white") : chip("sin lista todavía", "white")}</div><div class="row"><button class="btn small" data-a="pasarLista" data-id="${g.id}" data-d="${t}">Pasar lista</button><button class="btn small ghost" data-a="verPlan" data-id="${g.id}" data-d="${t}">Ver plan</button></div></div>`; }).join("");
+  const cards = hoy.map((g, i) => { const n = students(g.id).length, p = presentCount(g.id, t), c = ["celeste", "rosa", "menta", "limon"][i % 4]; return `<div class="card tint stack" style="--sec:var(--${c});--sh:var(--sh-${c});gap:8px"><div class="row" style="justify-content:space-between"><h3>${esc(g.hora || "")} ${esc(g.name)}</h3>${p ? chip(p + " de " + n + " vinieron", "white") : chip("sin lista todavía", "white")}</div><div class="row"><button class="btn small" data-a="pasarLista" data-id="${esc(g.id)}" data-d="${t}">Pasar lista</button><button class="btn small ghost" data-a="verPlan" data-id="${esc(g.id)}" data-d="${t}">Ver plan</button></div></div>`; }).join("");
   const tor = upcomingTorneos()[0];
   return `<div class="head"><div><h2>Buen día, ${esc(ST.profe)}</h2></div></div>
   <div class="stack" style="gap:22px">${big}${weekStrip()}
@@ -594,7 +605,7 @@ function classText(c) { return `${c.title}\n${fmt(c.date)} · ${c.level}${c.gid 
 function rClases() {
   if (!ui.draft) ui.draft = newDraft(groups()[0] && groups()[0].id);
   const d = ui.draft;
-  const blocks = d.blocks.map((b, i) => `<div class="card stack" style="gap:8px"><div class="row"><label class="f" style="flex:1 1 160px">Bloque<input data-b="${i}" data-f="n" value="${esc(b.n)}"></label><label class="f" style="width:84px">Minutos<input type="number" min="0" inputmode="numeric" data-b="${i}" data-f="m" value="${esc(b.m)}"></label><button class="btn small ghost" data-a="delBlock" data-id="${i}">Quitar</button></div><label class="f">Qué se hace<textarea data-b="${i}" data-f="t" rows="2">${esc(b.t)}</textarea></label></div>`).join("");
+  const blocks = d.blocks.map((b, i) => `<div class="card stack" style="gap:8px"><div class="row"><label class="f" style="flex:1 1 160px">Bloque<input data-b="${i}" data-f="n" value="${esc(b.n)}"></label><label class="f" style="width:84px">Minutos<input type="number" min="0" inputmode="numeric" data-b="${i}" data-f="m" value="${esc(b.m)}"></label><button class="btn small ghost" data-a="delBlock" data-id="${esc(i)}">Quitar</button></div><label class="f">Qué se hace<textarea data-b="${i}" data-f="t" rows="2">${esc(b.t)}</textarea></label></div>`).join("");
   const saved = plans().sort((a, b) => (b.date || "").localeCompare(a.date || ""));
   return `<div class="head"><div><h2>Planificador de clases</h2><p>Elegí el grupo y la fecha, ajustá los bloques y guardá el plan.</p></div></div>
   <div class="card tint stack"><div class="row"><label class="f" style="flex:2 1 200px">Título<input data-d="title" value="${esc(d.title)}" placeholder="Ej: Saltos de vals"></label>
@@ -604,7 +615,7 @@ function rClases() {
   <div class="stack" style="margin-top:18px;gap:16px">${blocks}<div class="row"><button class="btn ghost" data-a="addBlock">Agregar bloque</button><span class="chip white">Total ${mins(d.blocks)} min</span></div></div>
   <div class="row" style="margin-top:18px"><button class="btn" data-a="savePlan">${d.id ? "Guardar cambios" : "Guardar clase"}</button>${d.id ? `<button class="btn ghost" data-a="newPlan">Armar otra</button>` : ""}<button class="btn ghost" data-a="copyPlan">Copiar texto</button><span class="muted" id="cmsg" role="status">${esc(ui.cerr)}</span></div>
   <div class="head" style="margin-top:30px"><div><h3>Clases guardadas</h3></div></div>
-  <div class="stack" style="gap:12px">${saved.length ? saved.map(c => `<div class="card flat row" style="justify-content:space-between"><div style="min-width:0"><b>${esc(c.title)}</b><p class="muted">${esc(fmt(c.date))}${c.gid ? " · " + esc(gName(c.gid)) : ""} · ${mins(c.blocks)} min</p></div><span class="row" style="gap:6px"><button class="btn small ghost" data-a="openPlan" data-id="${c.id}">Abrir</button>${delBtn("delPlan", c.id)}</span></div>`).join("") : emptyBox("Todavía no guardaste ninguna clase.")}</div>`;
+  <div class="stack" style="gap:12px">${saved.length ? saved.map(c => `<div class="card flat row" style="justify-content:space-between"><div style="min-width:0"><b>${esc(c.title)}</b><p class="muted">${esc(fmt(c.date))}${c.gid ? " · " + esc(gName(c.gid)) : ""} · ${mins(c.blocks)} min</p></div><span class="row" style="gap:6px"><button class="btn small ghost" data-a="openPlan" data-id="${esc(c.id)}">Abrir</button>${delBtn("delPlan", c.id)}</span></div>`).join("") : emptyBox("Todavía no guardaste ninguna clase.")}</div>`;
 }
 
 /* ===== Calendario (asistencia y lo que se vio) ===== */
@@ -618,7 +629,7 @@ function calGrid(g) {
     let cls = "", lab = "";
     if (work) { cls = sch ? "done" : "extra"; lab = sch ? "hecha" : "extra"; } else if (sin) { cls = "sin"; lab = "sin"; } else if (sch) { if (d < t) { cls = "miss"; lab = "falta"; } else { cls = "sch"; lab = "clase"; } }
     if (tor) lab = "torneo";
-    h += `<button class="cd ${cls}${d === t ? " today" : ""}${d === ui.cdate ? " sel" : ""}" data-a="pickDay" data-id="${d}" aria-label="${esc(fmtLong(d))}${lab ? ", " + lab : ""}">${n}${lab ? `<small>${lab}</small>` : ""}</button>`;
+    h += `<button class="cd ${cls}${d === t ? " today" : ""}${d === ui.cdate ? " sel" : ""}" data-a="pickDay" data-id="${esc(d)}" aria-label="${esc(fmtLong(d))}${lab ? ", " + lab : ""}">${n}${lab ? `<small>${lab}</small>` : ""}</button>`;
   }
   return h + "</div>";
 }
@@ -630,10 +641,10 @@ function dayPanel(g) {
   const chipBtn = (c, label) => `<button class="btn small${on(c) ? " on" : ""}" data-a="logItem" data-id="${esc(c)}">${esc(label)}</button>`;
   return `<div class="card tint tape stack" style="--sec:var(--limon);--sh:var(--sh-limon)"><div class="row" style="justify-content:space-between"><h3>${esc(fmtLong(d))}</h3>${chip(sch ? "clase del grupo" : "día extra", sch ? "lila" : "celeste")}</div>
     <p class="muted">${esc(g.name)}${g.hora ? " · " + esc(g.hora) : ""}</p>
-    <div class="row">${chipBtn("x:sin", "Sin clase este día")}${plan ? `<button class="btn small ghost" data-a="verPlan" data-id="${g.id}" data-d="${d}">Ver plan</button>` : `<button class="btn small ghost" data-a="verPlan" data-id="${g.id}" data-d="${d}">Armar plan</button>`}</div></div>
+    <div class="row">${chipBtn("x:sin", "Sin clase este día")}${plan ? `<button class="btn small ghost" data-a="verPlan" data-id="${esc(g.id)}" data-d="${d}">Ver plan</button>` : `<button class="btn small ghost" data-a="verPlan" data-id="${esc(g.id)}" data-d="${d}">Armar plan</button>`}</div></div>
   <div class="card stack"><div class="row" style="justify-content:space-between"><h3>Asistencia</h3><span class="chip menta">${n} de ${sts.length}</span></div>
     ${sts.length ? `<div class="row"><button class="btn small ghost" data-a="attAll">Todas presentes</button><button class="btn small ghost" data-a="attNone">Limpiar</button></div>
-    <div class="stack" style="gap:6px">${sts.map(s => `<div class="row" style="justify-content:space-between;flex-wrap:nowrap"><b>${esc(s.name)}</b><button class="dot${has(attKey(g.id, d, s.id)) ? " on" : ""}" data-a="att" data-id="${s.id}" aria-label="Presente: ${esc(s.name)}" aria-pressed="${has(attKey(g.id, d, s.id))}"></button></div>`).join("")}</div>` : emptyBox("Este grupo todavía no tiene alumnas. Cargalas en Alumnas.")}</div>
+    <div class="stack" style="gap:6px">${sts.map(s => `<div class="row" style="justify-content:space-between;flex-wrap:nowrap"><b>${esc(s.name)}</b><button class="dot${has(attKey(g.id, d, s.id)) ? " on" : ""}" data-a="att" data-id="${esc(s.id)}" aria-label="Presente: ${esc(s.name)}" aria-pressed="${has(attKey(g.id, d, s.id))}"></button></div>`).join("")}</div>` : emptyBox("Este grupo todavía no tiene alumnas. Cargalas en Alumnas.")}</div>
   <div class="card stack"><h3>Qué se vio</h3><div class="quick">${QUICK.map(c => chipBtn(c, c)).join("")}</div>
     ${sts.length ? `<p class="gtitle" style="margin:0">Coreografías trabajadas</p><div class="quick">${sts.map(s => chipBtn("co:" + s.id, "Coreo " + s.name)).join("")}</div>` : ""}
     ${free.length ? `<div class="quick">${free.map(c => chipBtn(c, c)).join("")}</div>` : ""}
@@ -647,7 +658,7 @@ function rCalendario() {
   const g = group(ui.cg), [y, m] = ui.month.split("-").map(Number);
   const tors = upcomingTorneos().slice(0, 5);
   return `<div class="head"><div><h2>Calendario</h2><p>Tocá un día para pasar lista y anotar lo que se vio.</p></div></div>
-  <div class="stack"><div class="seg">${gs.map(x => `<button class="btn small${x.id === g.id ? " on" : ""}" data-a="cgroup" data-id="${x.id}">${esc(x.name)}</button>`).join("")}</div>
+  <div class="stack"><div class="seg">${gs.map(x => `<button class="btn small${x.id === g.id ? " on" : ""}" data-a="cgroup" data-id="${esc(x.id)}">${esc(x.name)}</button>`).join("")}</div>
   <div class="card stack"><div class="row" style="justify-content:space-between"><button class="btn small ghost" data-a="month" data-id="-1" aria-label="Mes anterior">←</button><h3>${esc(MESES_LARGO[m])} ${y}</h3><button class="btn small ghost" data-a="month" data-id="1" aria-label="Mes siguiente">→</button></div>${calGrid(g)}
   <div class="row"><span class="chip lila">clase</span><span class="chip menta">hecha</span><span class="chip rosa">falta</span><span class="chip celeste">extra</span></div></div>
   ${dayPanel(g)}
@@ -658,10 +669,10 @@ const MESES_LARGO = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
 /* ===== Coreos ===== */
 function stepCard(s, p, i, n) {
   if (ui.editStep === p.id) return `<div class="card stack" style="gap:8px"><div class="row"><label class="f" style="flex:1 1 120px">Tipo<select id="se_tipo"><option value="tec"${p.tipo === "tec" ? " selected" : ""}>Técnico</option><option value="art"${p.tipo === "art" ? " selected" : ""}>Artístico</option></select></label><label class="f" style="width:96px">Minuto<input id="se_t" value="${esc(p.t || "")}" placeholder="0:20"></label></div>
-    <label class="f">Qué pasa<input id="se_txt" value="${esc(p.txt)}" maxlength="140"></label>${refSelect("se_ref", s, p.ref)}<div class="row"><button class="btn small" data-a="saveStep" data-id="${p.id}">Guardar</button><button class="btn small ghost" data-a="cancelStep">Cancelar</button></div></div>`;
+    <label class="f">Qué pasa<input id="se_txt" value="${esc(p.txt)}" maxlength="140"></label>${refSelect("se_ref", s, p.ref)}<div class="row"><button class="btn small" data-a="saveStep" data-id="${esc(p.id)}">Guardar</button><button class="btn small ghost" data-a="cancelStep">Cancelar</button></div></div>`;
   const e = stuEff(s), it = e && p.ref ? e.items.find(x => itemKey(e, x) === p.ref) : null;
   return `<div class="card stack" style="gap:8px"><div class="stepc"><span class="stepn">${i + 1}</span><div style="min-width:0;flex:1"><b>${esc(p.txt)}</b><p class="muted">${chip(p.tipo === "art" ? "Artístico" : "Técnico", p.tipo === "art" ? "rosa" : "celeste")} ${p.t ? chip(p.t, "white") : ""} ${it ? chip("Cumple: " + shortName(it.t), "menta") : ""}</p></div></div>
-    <div class="row"><button class="btn small ghost" data-a="stepUp" data-id="${p.id}"${i === 0 ? " disabled" : ""} aria-label="Subir">↑</button><button class="btn small ghost" data-a="stepDown" data-id="${p.id}"${i === n - 1 ? " disabled" : ""} aria-label="Bajar">↓</button><button class="btn small ghost" data-a="editStep" data-id="${p.id}">Editar</button>${delBtn("delStep", p.id, "Quitar")}</div></div>`;
+    <div class="row"><button class="btn small ghost" data-a="stepUp" data-id="${esc(p.id)}"${i === 0 ? " disabled" : ""} aria-label="Subir">↑</button><button class="btn small ghost" data-a="stepDown" data-id="${esc(p.id)}"${i === n - 1 ? " disabled" : ""} aria-label="Bajar">↓</button><button class="btn small ghost" data-a="editStep" data-id="${esc(p.id)}">Editar</button>${delBtn("delStep", p.id, "Quitar")}</div></div>`;
 }
 function refSelect(id, s, sel) {
   const e = stuEff(s); if (!e) return "";
@@ -673,7 +684,7 @@ function rStudent(s) {
   const head = `<div class="row" style="margin-bottom:12px"><button class="back" data-a="closeStu">← Alumnas del grupo</button></div><div class="head"><div><h2>${esc(s.name)}</h2><p>${esc(g ? g.name : "")}${c ? " · " + esc(c.e.n) : ""}</p></div></div>`;
   let check = "";
   if (c) {
-    const must = c.must.map(x => `<div class="ck${x.done ? " done" : ""}${x.by.length ? " auto" : ""}" ${x.by.length ? "" : `data-a="tick" data-id="${x.key}" role="checkbox" aria-checked="${x.done}" tabindex="0"`}><span>${x.done ? "✓ " : ""}${esc(x.it.t)}${x.by.length ? `<br><span class="muted">Está en el paso ${steps.indexOf(x.by[0]) + 1} de tu coreo</span>` : ""}</span></div>`).join("");
+    const must = c.must.map(x => `<div class="ck${x.done ? " done" : ""}${x.by.length ? " auto" : ""}" ${x.by.length ? "" : `data-a="tick" data-id="${esc(x.key)}" role="checkbox" aria-checked="${x.done}" tabindex="0"`}><span>${x.done ? "✓ " : ""}${esc(x.it.t)}${x.by.length ? `<br><span class="muted">Está en el paso ${steps.indexOf(x.by[0]) + 1} de tu coreo</span>` : ""}</span></div>`).join("");
     const lim = c.e.items.filter(it => it.k !== "m").map(it => `<p><span class="chip ${KIND[it.k][1]}">${KIND[it.k][0]}</span> ${esc(it.t)}</p>`).join("");
     const tcCls = { ok: "ok", bad: "", none: "" }[c.tc.st];
     check = `<div class="card stack"><div class="row" style="justify-content:space-between"><h3>Del reglamento</h3>${chip(c.done + " de " + c.must.length + " obligatorios", c.missing.length ? "rosa" : "menta")}</div>
@@ -699,9 +710,9 @@ function rCoreos() {
   if (!gs.length) return `<div class="head"><div><h2>Coreografías</h2></div></div>${emptyBox("Primero creá un grupo y cargá alumnas en Alumnas.")}`;
   if (!ui.coGroup || !group(ui.coGroup)) ui.coGroup = gs[0].id;
   const sts = students(ui.coGroup);
-  const rows = sts.map(s => { const c = stuCheck(s), n = stepsOf(s.id).length; return `<button class="card tint stack" data-a="openStu" data-id="${s.id}" style="--sec:var(--rosa);--sh:var(--sh-rosa);text-align:left;cursor:pointer;gap:6px;border:2px solid var(--ink)"><div class="row" style="justify-content:space-between"><h3>${esc(s.name)}</h3>${c ? chip(c.done + "/" + c.must.length + " obligatorios", c.missing.length ? "white" : "menta") : ""}</div><p class="muted">${c ? esc(c.e.n) : "Sin eficiencia"} · ${n} ${n === 1 ? "paso" : "pasos"}</p></button>`; }).join("");
+  const rows = sts.map(s => { const c = stuCheck(s), n = stepsOf(s.id).length; return `<button class="card tint stack" data-a="openStu" data-id="${esc(s.id)}" style="--sec:var(--rosa);--sh:var(--sh-rosa);text-align:left;cursor:pointer;gap:6px;border:2px solid var(--ink)"><div class="row" style="justify-content:space-between"><h3>${esc(s.name)}</h3>${c ? chip(c.done + "/" + c.must.length + " obligatorios", c.missing.length ? "white" : "menta") : ""}</div><p class="muted">${c ? esc(c.e.n) : "Sin eficiencia"} · ${n} ${n === 1 ? "paso" : "pasos"}</p></button>`; }).join("");
   return `<div class="head"><div><h2>Coreografías</h2><p>Elegí una alumna para ver el checklist del reglamento y armar su coreo.</p></div></div>
-  <div class="stack"><div class="seg">${gs.map(x => `<button class="btn small${x.id === ui.coGroup ? " on" : ""}" data-a="coGroup" data-id="${x.id}">${esc(x.name)}</button>`).join("")}</div>
+  <div class="stack"><div class="seg">${gs.map(x => `<button class="btn small${x.id === ui.coGroup ? " on" : ""}" data-a="coGroup" data-id="${esc(x.id)}">${esc(x.name)}</button>`).join("")}</div>
   <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">${rows || emptyBox("Este grupo no tiene alumnas todavía.")}</div></div>`;
 }
 
@@ -712,12 +723,12 @@ function groupForm(g) {
   <label class="f">Nombre<input id="gname" value="${esc(g ? g.name : "")}" placeholder="Ej: Intermedio tarde" maxlength="60"></label>
   <div class="row"><label class="f" style="flex:1 1 150px">Nivel<select id="glevel">${LEVELS.map(l => `<option${g && g.level === l ? " selected" : ""}>${l}</option>`).join("")}</select></label><label class="f" style="width:130px">Hora<input id="ghora" type="time" value="${esc(g ? g.hora || "" : "")}"></label></div>
   <p class="muted" style="margin-top:4px"><b>Días de clase</b></p><div class="seg">${[1, 2, 3, 4, 5, 6, 0].map(n => `<label class="btn small ghost" style="cursor:pointer"><input type="checkbox" class="gday" value="${n}"${g && (g.dias || []).includes(n) ? " checked" : ""}> ${WD[n]}</label>`).join("")}</div>
-  <div class="row"><button class="btn" data-a="saveGroup" data-id="${id}">Guardar grupo</button><button class="btn ghost" data-a="cancelGroup">Cancelar</button><span class="muted" id="gerr" role="alert"></span></div></div>`;
+  <div class="row"><button class="btn" data-a="saveGroup" data-id="${esc(id)}">Guardar grupo</button><button class="btn ghost" data-a="cancelGroup">Cancelar</button><span class="muted" id="gerr" role="alert"></span></div></div>`;
 }
 function rFicha(s) {
-  const cuotas = MESES_CUOTA.map(m => { const k = "q:" + s.id + ":" + YEAR + "-" + z2(m); return `<button class="btn small ghost${has(k) ? " on" : ""}" data-a="cuota" data-id="${k}" style="${has(k) ? "background:var(--menta)" : ""}" aria-pressed="${has(k)}">${MESES[m]}</button>`; }).join("");
+  const cuotas = MESES_CUOTA.map(m => { const k = "q:" + s.id + ":" + YEAR + "-" + z2(m); return `<button class="btn small ghost${has(k) ? " on" : ""}" data-a="cuota" data-id="${esc(k)}" style="${has(k) ? "background:var(--menta)" : ""}" aria-pressed="${has(k)}">${MESES[m]}</button>`; }).join("");
   return `<div class="row" style="margin-bottom:12px"><button class="back" data-a="closeFicha">← Volver al grupo</button></div><div class="head"><div><h2>${esc(s.name)}</h2></div></div>
-  <div class="stack"><div class="card stack"><label class="f">Nombre (solo nombre de pila)<input id="fname" value="${esc(s.name)}" maxlength="60"></label><label class="f">Grupo<select id="fgid">${gOpts(s.gid)}</select></label><div class="row"><button class="btn small" data-a="saveFicha" data-id="${s.id}">Guardar</button><span class="muted" id="ferr" role="status"></span></div></div>
+  <div class="stack"><div class="card stack"><label class="f">Nombre (solo nombre de pila)<input id="fname" value="${esc(s.name)}" maxlength="60"></label><label class="f">Grupo<select id="fgid">${gOpts(s.gid)}</select></label><div class="row"><button class="btn small" data-a="saveFicha" data-id="${esc(s.id)}">Guardar</button><span class="muted" id="ferr" role="status"></span></div></div>
   <div class="card stack"><h3>Cuotas ${YEAR}</h3><div class="seg">${cuotas}</div><p class="muted">Tocá el mes para marcarlo como pagado.</p></div>
   <div class="card flat row" style="justify-content:space-between"><span class="muted">Si se va del grupo, borrala.</span>${delBtn("delStu", s.id, "Borrar alumna")}</div></div>`;
 }
@@ -730,10 +741,10 @@ function rAlumnas() {
   if (!ui.ag || !group(ui.ag)) ui.ag = gs[0].id;
   const g = group(ui.ag), sts = students(g.id), mk = YEAR + "-" + z2(new Date().getMonth() + 1), pagaron = sts.filter(s => has("q:" + s.id + ":" + mk)).length;
   return `<div class="head"><div><h2>Alumnas y grupos</h2></div><button class="btn small" data-a="newGroup">+ Nuevo grupo</button></div>
-  <div class="stack"><div class="seg">${gs.map(x => `<button class="btn small${x.id === g.id ? " on" : ""}" data-a="agroup" data-id="${x.id}">${esc(x.name)}</button>`).join("")}</div>
-  <div class="card tint tape stack" style="--sec:var(--menta);--sh:var(--sh-menta);gap:8px"><div class="row" style="justify-content:space-between"><h3>${esc(g.name)}</h3>${chip(g.level, "white")}</div><p>${(g.dias || []).length ? (g.dias || []).map(n => WD[n]).join(", ") : "Sin días cargados"}${g.hora ? " · " + esc(g.hora) : ""}</p><p class="muted">Profe: ${esc(g.profe || "")} · Cuota de ${MESES[new Date().getMonth() + 1]}: ${pagaron} de ${sts.length}</p><div class="row"><button class="btn small ghost" data-a="editGroup" data-id="${g.id}">Editar grupo</button>${delBtn("delGroup", g.id, "Borrar grupo")}</div></div>
+  <div class="stack"><div class="seg">${gs.map(x => `<button class="btn small${x.id === g.id ? " on" : ""}" data-a="agroup" data-id="${esc(x.id)}">${esc(x.name)}</button>`).join("")}</div>
+  <div class="card tint tape stack" style="--sec:var(--menta);--sh:var(--sh-menta);gap:8px"><div class="row" style="justify-content:space-between"><h3>${esc(g.name)}</h3>${chip(g.level, "white")}</div><p>${(g.dias || []).length ? (g.dias || []).map(n => WD[n]).join(", ") : "Sin días cargados"}${g.hora ? " · " + esc(g.hora) : ""}</p><p class="muted">Profe: ${esc(g.profe || "")} · Cuota de ${MESES[new Date().getMonth() + 1]}: ${pagaron} de ${sts.length}</p><div class="row"><button class="btn small ghost" data-a="editGroup" data-id="${esc(g.id)}">Editar grupo</button>${delBtn("delGroup", g.id, "Borrar grupo")}</div></div>
   <div class="card stack"><h3>Alumnas (${sts.length})</h3><div class="row"><input id="newstu" placeholder="Nombre de pila" maxlength="60" style="flex:1 1 180px"><button class="btn small" data-a="addStu">Agregar</button></div><span class="muted" id="sterr" role="alert"></span>
-  <div class="stack" style="gap:8px">${sts.length ? sts.map(s => `<div class="row" style="justify-content:space-between;flex-wrap:nowrap"><b>${esc(s.name)}</b><span class="row" style="gap:6px">${has("q:" + s.id + ":" + mk) ? chip("cuota al día", "menta") : chip("sin cuota", "white")}<button class="btn small ghost" data-a="openFicha" data-id="${s.id}">Ficha</button></span></div>`).join("") : emptyBox("Todavía no hay alumnas en este grupo.")}</div></div></div>`;
+  <div class="stack" style="gap:8px">${sts.length ? sts.map(s => `<div class="row" style="justify-content:space-between;flex-wrap:nowrap"><b>${esc(s.name)}</b><span class="row" style="gap:6px">${has("q:" + s.id + ":" + mk) ? chip("cuota al día", "menta") : chip("sin cuota", "white")}<button class="btn small ghost" data-a="openFicha" data-id="${esc(s.id)}">Ficha</button></span></div>`).join("") : emptyBox("Todavía no hay alumnas en este grupo.")}</div></div></div>`;
 }
 
 /* ===== Más ===== */
@@ -761,8 +772,8 @@ function rReglamento() {
   const e = effById(ui.reff), gs = ["Saltos", "Trompos", "Figuras", "Pasos"];
   const body = gs.map(g => { const its = e.items.filter(x => x.g === g); return its.length ? `<div class="card flat"><h3>${g}</h3><div class="stack" style="gap:8px;margin-top:8px">${its.map(it => `<p><span class="chip ${KIND[it.k][1]}">${KIND[it.k][0]}</span> ${esc(it.t)}</p>`).join("")}</div></div>` : ""; }).join("");
   return `<div class="head"><div><h2>Reglamento</h2><p>Qué pide cada eficiencia. El checklist de cada alumna sale de acá.</p></div><a class="btn small ghost" href="reglamento-cap-2024.pdf" target="_blank" rel="noopener">Abrir el PDF</a></div>
-  <div class="stack"><div class="card stack"><p class="gtitle" style="margin:0">Elegí la copa o divisional</p><div class="seg">${Object.keys(COPAS).map(c => `<button class="btn small${copa === c ? " on" : ""}" data-a="rcopa" data-id="${c}">${esc(COPAS[c])}</button>`).join("")}</div>
-  <p class="gtitle" style="margin:6px 0 0">Eficiencia</p><div class="seg">${effs.map(x => `<button class="btn small${e.id === x.id ? " on" : ""}" data-a="reff" data-id="${x.id}">${esc(x.n)}</button>`).join("")}</div></div>
+  <div class="stack"><div class="card stack"><p class="gtitle" style="margin:0">Elegí la copa o divisional</p><div class="seg">${Object.keys(COPAS).map(c => `<button class="btn small${copa === c ? " on" : ""}" data-a="rcopa" data-id="${esc(c)}">${esc(COPAS[c])}</button>`).join("")}</div>
+  <p class="gtitle" style="margin:6px 0 0">Eficiencia</p><div class="seg">${effs.map(x => `<button class="btn small${e.id === x.id ? " on" : ""}" data-a="reff" data-id="${esc(x.id)}">${esc(x.n)}</button>`).join("")}</div></div>
   <div class="card tint tape stack" style="--sec:var(--rosa);--sh:var(--sh-rosa)"><div class="row" style="justify-content:space-between"><h2>${esc(e.n)}</h2><span class="chip white">${esc(COPAS[copa])}</span></div><span class="chip limon" style="align-self:flex-start">Tiempo: ${esc(timeLabel(e))}</span></div>
   <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px">${body}</div>
   <div class="card"><h3>Descuentos de ${esc(COPAS[copa])}</h3><div class="scroll"><table><thead><tr><th>Situación</th><th>Descuento</th></tr></thead><tbody>${DESC[copa].map(([t, v]) => `<tr><td class="name">${esc(t)}</td><td style="white-space:normal">${esc(v)}</td></tr>`).join("")}</tbody></table></div></div>
@@ -780,7 +791,7 @@ function rMas() {
   if (ui.sub === "reglamento") return `<div class="row" style="margin-bottom:10px"><button class="back" data-a="go" data-id="mas">← Más</button></div>${rReglamento()}`;
   if (ui.sub === "aviso") return `<div class="row" style="margin-bottom:10px"><button class="back" data-a="go" data-id="mas">← Más</button></div><div class="head"><div><h2>Aviso a familias</h2><p>Mandalo antes de cargar a las alumnas, y guardá las respuestas "Conforme". Es un modelo, no reemplaza una consulta legal.</p></div></div><div class="card stack"><textarea id="avisotxt" rows="10">${esc(AVISO)}</textarea><div class="row"><button class="btn small" data-a="copyMsg" data-id="avisotxt">Copiar</button><span class="muted" id="cm-avisotxt" role="status"></span></div></div>`;
   if (ui.sub === "ajustes") return `<div class="row" style="margin-bottom:10px"><button class="back" data-a="go" data-id="mas">← Más</button></div>${rAjustes()}`;
-  return `<div class="head"><div><h2>Más</h2></div></div><div class="tiles3">${SUBS.map(([k, t, s, c]) => `<button class="tile" style="--c:var(--${c})" data-a="sub" data-id="${k}"><b>${t}</b><span class="hand">${s}</span></button>`).join("")}</div>`;
+  return `<div class="head"><div><h2>Más</h2></div></div><div class="tiles3">${SUBS.map(([k, t, s, c]) => `<button class="tile" style="--c:var(--${c})" data-a="sub" data-id="${esc(k)}"><b>${t}</b><span class="hand">${s}</span></button>`).join("")}</div>`;
 }
 function rWelcome() {
   return `<div class="head"><div><h2>Bienvenida</h2><p>Esto es un cuaderno para organizar clases, asistencia y coreografías de la liga.</p></div></div>
@@ -986,6 +997,7 @@ document.addEventListener("change", ev => {
 });
 
 /* ===== Inicio ===== */
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") { clearTimeout(saveTimer); persist(); } });
 (function boot() {
   if (location.hash === "#importar") { ui.tab = "mas"; ui.sub = "sync"; }
   renderAll();
