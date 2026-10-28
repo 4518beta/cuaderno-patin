@@ -8,7 +8,7 @@ Los datos de cada profe quedan guardados en su propio celular. Para compartir en
 
 1. Entrá a github.com, creá una cuenta y activá la verificación en dos pasos.
 2. "New repository". Nombre: `cuaderno-patin`. Marcá **Public** (con cuenta gratis, Pages solo funciona con repositorios públicos). Tildá "Add a README file" y creá.
-3. "Add file", "Upload files". Arrastrá **el contenido** de esta carpeta (no la carpeta): `index.html`, `reglamento-cap-2024.pdf` y `.nojekyll`. "Commit changes".
+3. "Add file", "Upload files". Arrastrá **el contenido** de esta carpeta (no la carpeta): `index.html`, `app.js`, `reglamento-cap-2024.pdf` y `.nojekyll`. "Commit changes".
 4. "Settings", "Pages". En "Source" elegí "Deploy from a branch", rama `main`, carpeta `/ (root)` y "Save".
 5. En uno o dos minutos aparece el link: `https://4518beta.github.io/cuaderno-patin/`.
 
@@ -35,11 +35,11 @@ Conviene sincronizar después de cada clase. Después de pasar lista o anotar, l
 
 ## Actualizar el sitio
 
-Subí el `index.html` nuevo al repositorio ("Add file", "Upload files", mismo nombre). Los datos de cada celular no se tocan mientras la dirección del sitio sea la misma. No cambies el nombre del repositorio ni de la cuenta, porque cambia la dirección y los celulares empiezan vacíos.
+Subí el `index.html` y el `app.js` nuevos al repositorio ("Add file", "Upload files", mismo nombre). Los datos de cada celular no se tocan mientras la dirección del sitio sea la misma. No cambies el nombre del repositorio ni de la cuenta, porque cambia la dirección y los celulares empiezan vacíos.
 
 ## Torneos y reglamento
 
-Los carga el administrador en el código (`LIGA.torneos`) y en el PDF. Para sumar un torneo o un reglamento nuevo, se pasa la información y se sube un `index.html` actualizado.
+Los carga el administrador en el código (`LIGA.torneos`) y en el PDF. Para sumar un torneo o un reglamento nuevo, se pasa la información y se suben el `index.html` y el `app.js` actualizados.
 
 ## Privacidad
 
@@ -52,3 +52,7 @@ Los carga el administrador en el código (`LIGA.torneos`) y en el PDF. Para suma
 ## Licencia y créditos
 
 Código libre. Tipografías Fredoka, Caveat y Nunito (SIL Open Font License), incluidas dentro de la página.
+
+## Seguridad
+
+La página solo ejecuta el código de `app.js` (política `script-src 'self'`). Cualquier script o manejador que se colara en el HTML lo bloquea el navegador. Los archivos que se importan se limpian: se descartan ids raros y fechas más de un día en el futuro.

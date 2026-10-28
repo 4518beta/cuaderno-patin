@@ -62,7 +62,7 @@
       "path": "/",
       "slug": "welcome-hoy",
       "sourceFile": "index.html",
-      "fingerprint": "a1e594e0dcbf14daff565410039352b139c3f69325c679dda9f4618486ff1859",
+      "fingerprint": "1c6f1de6555eb00947917979b9dda130e014213845caf3786a8c396d86ba5a6a",
       "requiresAuth": false,
       "rolesAllowed": [
         "anonymous"
@@ -87,7 +87,7 @@
       "path": "/ (tab: alumnas)",
       "slug": "alumnas",
       "sourceFile": "index.html",
-      "fingerprint": "a1e594e0dcbf14daff565410039352b139c3f69325c679dda9f4618486ff1859",
+      "fingerprint": "1c6f1de6555eb00947917979b9dda130e014213845caf3786a8c396d86ba5a6a",
       "requiresAuth": false,
       "rolesAllowed": [
         "anonymous"
@@ -113,7 +113,7 @@
       "path": "/ (tab: clases)",
       "slug": "clases",
       "sourceFile": "index.html",
-      "fingerprint": "a1e594e0dcbf14daff565410039352b139c3f69325c679dda9f4618486ff1859",
+      "fingerprint": "1c6f1de6555eb00947917979b9dda130e014213845caf3786a8c396d86ba5a6a",
       "requiresAuth": false,
       "rolesAllowed": [
         "anonymous"
@@ -138,7 +138,7 @@
       "path": "/ (tab: calendario)",
       "slug": "calendario",
       "sourceFile": "index.html",
-      "fingerprint": "a1e594e0dcbf14daff565410039352b139c3f69325c679dda9f4618486ff1859",
+      "fingerprint": "1c6f1de6555eb00947917979b9dda130e014213845caf3786a8c396d86ba5a6a",
       "requiresAuth": false,
       "rolesAllowed": [
         "anonymous"
@@ -164,7 +164,7 @@
       "path": "/ (tab: coreos)",
       "slug": "coreos",
       "sourceFile": "index.html",
-      "fingerprint": "a1e594e0dcbf14daff565410039352b139c3f69325c679dda9f4618486ff1859",
+      "fingerprint": "1c6f1de6555eb00947917979b9dda130e014213845caf3786a8c396d86ba5a6a",
       "requiresAuth": false,
       "rolesAllowed": [
         "anonymous"
@@ -190,7 +190,7 @@
       "path": "/ (tab: mas)",
       "slug": "mas",
       "sourceFile": "index.html",
-      "fingerprint": "a1e594e0dcbf14daff565410039352b139c3f69325c679dda9f4618486ff1859",
+      "fingerprint": "1c6f1de6555eb00947917979b9dda130e014213845caf3786a8c396d86ba5a6a",
       "requiresAuth": false,
       "rolesAllowed": [
         "anonymous"
@@ -215,7 +215,7 @@
       "path": "/#importar",
       "slug": "importar",
       "sourceFile": "index.html",
-      "fingerprint": "a1e594e0dcbf14daff565410039352b139c3f69325c679dda9f4618486ff1859",
+      "fingerprint": "1c6f1de6555eb00947917979b9dda130e014213845caf3786a8c396d86ba5a6a",
       "requiresAuth": false,
       "rolesAllowed": [
         "anonymous"
@@ -235,5 +235,6 @@
         "T64-importar-newer-wins-merge"
       ]
     }
-  ]
+  ],
+  "appJsFingerprint": "8ed7442c46762968af67b6fad663626221cbf2dfb59792eb85143784a798c145"
 }
