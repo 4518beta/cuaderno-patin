@@ -17,20 +17,21 @@ El repositorio solo tiene el código. Nunca se suben nombres de alumnas.
 ## Usarlo
 
 - Abrí el link en Chrome. Tocá los tres puntitos y "Agregar a la pantalla principal" para tener un acceso directo (es opcional).
-- La primera vez pide tu nombre. La otra profe lo ve al sincronizar.
+- La primera vez pide tu nombre. La otra profe lo ve al recibir tu archivo.
 - Cada profe crea sus grupos en **Alumnas**. En **Calendario** cualquiera de las dos puede pasar lista y anotar lo que se vio, en cualquier grupo.
 - En **Coreos**, cada alumna tiene el checklist del reglamento de su nivel y una lista de pasos propios (técnicos y artísticos). Si un paso cumple un elemento del reglamento, el checklist lo tilda solo. La app avisa solo si faltan elementos obligatorios.
 
-## Sincronizar entre las dos profes
+## Guardar y compartir los datos
 
-Las dos comparten una carpeta de Drive llamada `Cuaderno Liga` (compartida como Editor, nunca con "cualquiera con el vínculo").
+Cada profe guarda lo suyo desde su celular, en **Más, Sincronizar**.
 
-1. **Más, Sincronizar, Paso 1:** elegí el archivo más nuevo de la otra profe, que está en la carpeta. La app muestra cuántos cambios trae y cuántos datos editaron las dos. Tocá **Combinar**. Si las dos editaron lo mismo, queda lo editado más tarde.
-2. **Paso 2:** tocá **Guardar en Drive**, elegí la carpeta `Cuaderno Liga` y Guardar.
+- **Guardar en Drive:** abre el menú del celular. Elegí Drive y la carpeta `Cuaderno Liga` (compartida solo con las dos, como Editoras, nunca con "cualquiera con el vínculo"). Cada vez se crea un archivo nuevo con el nombre de la profe y la fecha. Se pueden borrar los viejos.
+- **Mandar por WhatsApp:** abre el menú del celular. Elegí WhatsApp y a la otra profe. Va el archivo con un mensaje que trae un link.
+- **Subir los datos que me mandó otra profe:** al tocar el link del mensaje, se abre el cuaderno directo en esa pantalla. Tocá "Elegir el archivo", buscalo en Descargas o en WhatsApp y tocá **Combinar**. La app muestra cuántos cambios trae y cuántos datos editaron las dos. Si las dos editaron lo mismo, queda lo editado más tarde.
 
-Conviene hacerlo después de cada clase. Después de pasar lista o anotar, la app pregunta si querés sincronizar.
+Un sitio web no puede abrirse solo al tocar un archivo en WhatsApp. Por eso el mensaje lleva el link: el archivo se elige a mano una vez, después de tocarlo.
 
-Cada vez que se guarda, Drive crea un archivo nuevo con el nombre de la profe y la fecha. Se pueden borrar los viejos.
+Conviene sincronizar después de cada clase. Después de pasar lista o anotar, la app pregunta si querés hacerlo.
 
 ## Actualizar el sitio
 

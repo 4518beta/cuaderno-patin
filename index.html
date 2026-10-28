@@ -743,11 +743,12 @@ function rSync() {
   const n = unshared(), last = ST.lastShared ? "Última vez que compartiste: " + new Date(ST.lastShared).toLocaleString("es-AR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "Todavía no compartiste nada.";
   const imp = ui.imp;
   const prev = imp ? `<div class="card tint stack" style="--sec:var(--limon);--sh:var(--sh-limon)"><h3>Archivo de ${esc(imp.profe)}</h3><p>${imp.nuevos} cambios nuevos para vos. ${imp.ambos ? imp.ambos + " datos los editaron las dos, queda el más reciente." : "No hay datos pisados."}</p>${imp.warn ? `<p class="hand">${esc(imp.warn)}</p>` : ""}<div class="row"><button class="btn" data-a="applyMerge">Combinar</button><button class="btn ghost" data-a="cancelMerge">Cancelar</button></div></div>` : "";
-  return `<div class="head"><div><h2>Sincronizar</h2><p>Las dos profes comparten una carpeta de Drive. Primero se trae lo de la otra, y después se guarda lo combinado.</p></div></div>
+  return `<div class="head"><div><h2>Sincronizar</h2><p>Cada profe guarda lo suyo en su Drive y le manda una copia a la otra por WhatsApp. Al recibirla, la otra la sube acá.</p></div></div>
   <div class="stack"><div class="card"><p class="${n ? "hand" : "muted"}">${n ? n + " cambios tuyos sin compartir." : "No hay cambios tuyos sin compartir."}</p><p class="muted">${esc(last)}</p></div>
-  <div class="card stack"><h3>Paso 1. Traer lo de la otra profe</h3><p class="muted">Tocá el botón y buscá en la carpeta "Cuaderno Liga" el archivo más nuevo de la otra profe.</p><label class="btn" style="cursor:pointer;align-self:flex-start">Elegir su archivo<input type="file" accept=".json,application/json" id="impin" style="display:none"></label></div>
+  <div class="card stack"><h3>Guardar mis datos en Drive</h3><p class="muted">Se abre el menú del celular. Elegí Drive, la carpeta "Cuaderno Liga" y Guardar.</p><div class="row"><button class="btn" data-a="share">Guardar en Drive</button><button class="btn ghost" data-a="download">Bajar al celular</button></div></div>
+  <div class="card stack"><h3>Mandar mis datos por WhatsApp</h3><p class="muted">Elegí WhatsApp y la profe. Va el archivo y un mensaje con un link que lleva directo a esta pantalla.</p><div class="row"><button class="btn" data-a="shareWa">Mandar por WhatsApp</button><button class="btn small ghost" data-a="copyWaMsg">Copiar el mensaje</button></div><span class="muted" id="smsg2" role="status"></span></div>
+  <div class="card stack"><h3>Subir los datos que me mandó otra profe</h3><p class="muted">Si te llegó un archivo por WhatsApp, tocá el botón y buscalo en Descargas o en WhatsApp. La app muestra qué trae antes de combinar.</p><label class="btn" style="cursor:pointer;align-self:flex-start">Elegir el archivo<input type="file" accept=".json,application/json" id="impin" style="display:none"></label></div>
   ${prev}
-  <div class="card stack"><h3>Paso 2. Guardar en la carpeta compartida</h3><p class="muted">Se abre el menú del celular. Elegí Drive, la carpeta "Cuaderno Liga" y Guardar.</p><div class="row"><button class="btn" data-a="share">Guardar en Drive</button><button class="btn ghost" data-a="download">Bajar al celular</button></div></div>
   <p class="muted" id="smsg" role="status">${esc(ui.syncMsg)}</p></div>`;
 }
 function rMensajes() {
@@ -829,16 +830,26 @@ function saveJsonFile(name, json) {
   const file = new File([json], name, { type: "application/json" });
   return file;
 }
-async function doShare(soloArchivo) {
+const importLink = () => location.href.split("#")[0] + "#importar";
+const waText = () => "Cuaderno de Patín: copia de " + ST.profe + ". Para sumarla a tu cuaderno, tocá este link y elegí el archivo que te mandé: " + importLink();
+async function doShare(modo) {
+  /* modo: "drive" abre el menú del celular, "wa" lo abre con un mensaje listo, "file" baja el archivo */
   const at = Date.now(), name = "cuaderno-liga-" + slug(ST.profe) + "-" + todayISO() + ".json", file = saveJsonFile(name, JSON.stringify({ ...exportFile(), at }));
+  const data = { files: [file], title: "Cuaderno de la liga" };
+  if (modo === "wa") data.text = waText();
   try {
-    if (!soloArchivo && navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file], title: "Cuaderno de la liga" });
-      ST.lastShared = at; persist(); ui.syncMsg = "Listo. Revisá en Drive que el archivo esté en la carpeta Cuaderno Liga."; renderPanel(); return;
+    if (modo !== "file" && navigator.canShare && navigator.canShare(data)) {
+      await navigator.share(data);
+      ST.lastShared = at; persist();
+      ui.syncMsg = modo === "wa" ? "Listo. Elegí WhatsApp y la profe. Si el archivo llegó sin el mensaje, mandale también el link de abajo." : "Listo. Revisá en Drive que el archivo esté en la carpeta Cuaderno Liga.";
+      renderPanel(); return;
     }
   } catch (e) { if (e && e.name === "AbortError") { ui.syncMsg = "Se canceló. No se guardó nada."; renderPanel(); return; } }
-  try { const u = URL.createObjectURL(file), a = document.createElement("a"); a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); ST.lastShared = at; persist(); ui.syncMsg = "Se bajó " + name + " a Descargas. Subilo a la carpeta Cuaderno Liga de Drive."; }
-  catch (e) { ui.syncMsg = "No pude armar el archivo en este navegador."; }
+  try {
+    const u = URL.createObjectURL(file), el = document.createElement("a"); el.href = u; el.download = name; document.body.appendChild(el); el.click(); el.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000);
+    ST.lastShared = at; persist();
+    ui.syncMsg = modo === "wa" ? "Este navegador no puede mandarlo directo. Se bajó " + name + " a Descargas: adjuntalo en WhatsApp y pegá el mensaje de abajo." : "Se bajó " + name + " a Descargas. Subilo a la carpeta Cuaderno Liga de Drive.";
+  } catch (e) { ui.syncMsg = "No pude armar el archivo en este navegador."; }
   renderPanel();
 }
 function readImport(file) {
@@ -926,8 +937,10 @@ const ACTIONS = {
   rcopa: id => { ui.rcopa = id; ui.reff = EFF.find(e => e.c === id).id; renderPanel(); },
   reff: id => { ui.reff = id; renderPanel(); },
   copyMsg: (id) => { const t = document.getElementById(id); if (t) copyText(t.value, document.getElementById("cm-" + id)); },
-  share: () => doShare(false),
-  download: () => doShare(true),
+  share: () => doShare("drive"),
+  shareWa: () => doShare("wa"),
+  download: () => doShare("file"),
+  copyWaMsg: () => copyText(waText(), $("#smsg2")),
   applyMerge: () => {
     const imp = ui.imp; if (!imp) return;
     const m = mergeData(ST.D, imp.data, ST.base);
@@ -974,6 +987,7 @@ document.addEventListener("change", ev => {
 
 /* ===== Inicio ===== */
 (function boot() {
+  if (location.hash === "#importar") { ui.tab = "mas"; ui.sub = "sync"; }
   renderAll();
   setStatus("Guardado en este celular");
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
