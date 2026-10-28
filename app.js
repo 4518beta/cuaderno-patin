@@ -554,8 +554,25 @@ function rAlumnas() {
 }
 
 /* ===== Más ===== */
-const SUBS = [["sync", "Sincronizar", "con la otra profe", "celeste"], ["mensajes", "Mensajes", "para familias", "rosa"], ["reglamento", "Reglamento", "CAP 2024", "limon"], ["aviso", "Aviso a familias", "texto para mandar", "menta"], ["ajustes", "Ajustes", "tu nombre y datos", "durazno"]];
+const SUBS = [["ayuda", "Cómo se usa", "paso a paso", "menta"], ["sync", "Sincronizar", "con la otra profe", "celeste"], ["mensajes", "Mensajes", "para familias", "rosa"], ["reglamento", "Reglamento", "CAP 2024", "limon"], ["aviso", "Aviso a familias", "texto para mandar", "menta"], ["ajustes", "Ajustes", "tu nombre y datos", "durazno"]];
 const AVISO = "Hola, les cuento que para organizar las clases usamos un cuaderno digital. Guardamos solo el nombre de pila de cada alumna, su grupo, la asistencia, la cuota y lo que trabajamos en clase. No guardamos DNI, direcciones ni fotos. Los datos quedan en el celular de las profes y los compartimos entre nosotras por una carpeta privada de Google Drive, cuyos servidores están en el exterior. Si quieren ver, corregir o borrar los datos de su hija o hijo, escríbanme. Si están de acuerdo, respondan \"Conforme\". Gracias.";
+function rAyuda() {
+  const paso = (t, items) => `<div class="card stack"><h3>${t}</h3>${items.map(x => `<p>${x}</p>`).join("")}</div>`;
+  return `<div class="head"><div><h2>Cómo se usa</h2><p>Cinco cosas para empezar y cómo guardar tus datos.</p></div></div><div class="stack">
+  ${paso("1. Armá tu primer grupo", ["Entrá a <b>Alumnas</b> y tocá <b>Nuevo grupo</b>. Poné el nombre, el nivel, la hora y los días de clase.", "Después agregá a las alumnas, solo con el nombre de pila."])}
+  ${paso("2. Pasá lista y anotá lo que se vio", ["En <b>Hoy</b> aparece la clase del día. Tocá <b>Pasar lista</b> y marcá quién vino.", "Más abajo, en <b>Qué se vio</b>, tocá lo que trabajaron o escribí algo. Si no hubo clase, tocá <b>Sin clase este día</b>. Podés dejar una nota para la próxima.", "Cualquiera de las dos profes puede cargar esto en cualquier grupo."])}
+  ${paso("3. Planificá la clase", ["En <b>Clases</b> armás los bloques con su duración. Podés cargar una plantilla por nivel. Tocá <b>Guardar clase</b> y queda en la lista."])}
+  ${paso("4. Coreos y reglamento", ["En <b>Coreos</b> elegí el grupo y la alumna. Ves lo que pide el reglamento para su nivel.", "Agregá los pasos de la coreo, técnicos o artísticos, con el minuto. Si un paso cumple un elemento obligatorio, se tilda solo.", "La app avisa únicamente si falta un elemento obligatorio. Tener pasos de más no es un problema.", "Para la canción, pegá el link que empiece con https://."])}
+  ${paso("5. Cuotas", ["En <b>Alumnas</b>, tocá <b>Ficha</b> y después el mes que pagó. Se puede volver a tocar para sacar la marca."])}
+  <div class="card tint stack" style="--sec:var(--limon);--sh:var(--sh-limon)"><h3>Cómo guardar tus datos</h3>
+    <p>Todo lo que cargás se guarda solo en <b>este celular</b>. Eso quiere decir que si borrás los datos del navegador o cambiás de celular, se pierde. Por eso conviene hacer una copia después de cada clase.</p>
+    <p><b>Para guardar:</b> andá a <b>Más</b>, <b>Sincronizar</b> y tocá <b>Guardar en Drive</b>. Se abre el menú del celular: elegí Drive, la carpeta <b>Cuaderno Liga</b> y tocá Guardar. Cada vez se crea un archivo nuevo con tu nombre y la fecha.</p>
+    <p><b>Para mandarle a la otra profe:</b> en la misma pantalla tocá <b>Mandar por WhatsApp</b> y elegí a la otra profe. Va el archivo con un mensaje que trae un link.</p>
+    <p><b>Para recibir lo de la otra profe:</b> tocá el link del mensaje. Se abre el cuaderno en <b>Sincronizar</b>. Tocá <b>Elegir el archivo</b>, buscalo en Descargas o en WhatsApp y tocá <b>Combinar</b>. Si las dos editaron lo mismo, queda lo que se editó más tarde.</p>
+    <p><b>Si cambiás de celular:</b> guardá en Drive en el celular viejo, abrí el cuaderno en el nuevo y subí ese archivo en Sincronizar.</p>
+    <p class="muted">Usá siempre el mismo navegador y la misma dirección, porque los datos quedan atados a ellos.</p></div>
+  </div>`;
+}
 function rSync() {
   const n = unshared(), last = ST.lastShared ? "Última vez que compartiste: " + new Date(ST.lastShared).toLocaleString("es-AR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "Todavía no compartiste nada.";
   const imp = ui.imp;
@@ -592,6 +609,7 @@ function rAjustes() {
   <div class="card flat stack"><h3>Borrar todo en este celular</h3><p class="muted">Borra grupos, alumnas y clases de este celular. Antes guardá una copia con Sincronizar. No toca lo que tenga la otra profe, pero si después sincronizás con su archivo, vuelve todo.</p><div class="row">${delBtn("delAll", "all", "Borrar todo")}</div></div></div>`;
 }
 function rMas() {
+  if (ui.sub === "ayuda") return `<div class="row" style="margin-bottom:10px"><button class="back" data-a="go" data-id="mas">← Más</button></div>${rAyuda()}`;
   if (ui.sub === "sync") return `<div class="row" style="margin-bottom:10px"><button class="back" data-a="go" data-id="mas">← Más</button></div>${rSync()}`;
   if (ui.sub === "mensajes") return `<div class="row" style="margin-bottom:10px"><button class="back" data-a="go" data-id="mas">← Más</button></div>${rMensajes()}`;
   if (ui.sub === "reglamento") return `<div class="row" style="margin-bottom:10px"><button class="back" data-a="go" data-id="mas">← Más</button></div>${rReglamento()}`;
